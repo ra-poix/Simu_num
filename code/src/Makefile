@@ -8,7 +8,7 @@ all: $(EXEC)
 %.o: %.cpp
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-$(EXEC): main.o 
+$(EXEC): main.o Call.o
 	$(CC) -o $@ $< 
 
 clean:

@@ -6,7 +6,8 @@ class Model{
 
     public:
         Model();
-        double sigma();
+        double Sigma();
+        double Rate();
 };
 
 #endif

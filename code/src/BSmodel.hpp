@@ -1,10 +1,12 @@
+#ifndef BSMODEL_H
+#define BSMODEL_H
 #include "model.hpp"
 
 class BSmodel : public Model{
 
     public:
         BSmodel();
-        BSmodel(double sigma, double r, double mu): sigma(sigma), r(r), mu(mu){}
+        BSmodel(double sigma, double r): sigma(sigma), r(r){}
 
         ~BSmodel();
 
@@ -16,3 +18,4 @@ class BSmodel : public Model{
         double r;
 
 };
+#endif
