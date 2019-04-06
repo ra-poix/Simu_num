@@ -1,7 +1,7 @@
 #ifndef OPTION_H
 #define OPTION_H
 
-class option{
+class Option{
 
 
     private:

@@ -5,11 +5,8 @@ class Model{
     private:
 
     public:
-
         Model();
         double sigma();
-
-
 };
 
 #endif
