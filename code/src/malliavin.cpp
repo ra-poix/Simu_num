@@ -53,6 +53,7 @@ mean_var monte_carlo(TDistrib & X, TGen & gen, unsigned batch_size, double epsil
     return r;
 }
 
+
 struct sensib_malliavin{
 protected:
     double delta;
@@ -61,4 +62,6 @@ protected:
 }
 
 template <typename TDistrib, typename TGen>
-sensib_malliavin malliavin(TDistrib & X, TGen & gen){} //+option, model
+sensib_malliavin malliavin(TDistrib & X, TGen & gen){
+    
+} //+option, model
