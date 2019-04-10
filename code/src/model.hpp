@@ -2,12 +2,9 @@
 #define MODEL_H
 class Model{
 
-    private:
-
     public:
-        Model();
-        double Sigma(double t, double x);
-        double Rate(double t, double x);
+        virtual double Sigma(double t, double x) = 0;
+        virtual double Rate(double t, double x) = 0;
 };
 
 #endif

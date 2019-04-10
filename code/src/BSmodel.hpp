@@ -5,17 +5,17 @@
 class BSmodel : public Model{
 
     public:
-        BSmodel();
-        BSmodel(double sigma, double r): sigma(sigma), r(r){}
+        BSmodel(double sigma, double r, double s): sigma(sigma), r(r), S0(s){}
+        ~BSmodel(){};
 
-        ~BSmodel();
-
-        double Sigma();
-        double Rate();
+        double S(){ return S0; };
+        double Sigma(double t, double x);
+        double Rate(double t, double x);
 
     private:
         double sigma;
         double r;
+        double S0;
 
 };
 #endif
