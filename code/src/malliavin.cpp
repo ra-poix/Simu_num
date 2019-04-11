@@ -1,4 +1,10 @@
 #include <iostream>
+#include <cmath>
+#include "compose.hpp"
+#include "Call.hpp"
+#include "BSmodel.hpp"
+#include <random>
+
 
 struct mean_var {
     mean_var(unsigned n = 0, double sum_x = 0, double sum_xx = 0)
@@ -55,13 +61,29 @@ mean_var monte_carlo(TDistrib & X, TGen & gen, unsigned batch_size, double epsil
 
 
 struct sensib_malliavin{
+public:
+    sensib_malliavin(double delta, double gamma, double vega): delta(0), gamma(0), vega(0){}
+    ~sensib_malliavin(){};
 protected:
     double delta;
     double gamma;
     double vega;
+};
+
+template <typename TDistrib, typename TGen>
+sensib_malliavin malliavin(TDistrib & X, TGen & gen, unsigned batch_size, double epsilon){
+    
 }
 
 template <typename TDistrib, typename TGen>
-sensib_malliavin malliavin(TDistrib & X, TGen & gen){
-    
-} //+option, model
+sensib_malliavin malliavin(composed<Call ,BSmodel>, TGen & gen, unsigned batch_size, double epsilon){
+    std::normal_distribution<> G;
+    auto Y = compose(call, G);
+    auto price = monte_carlo(Y, gen, 1e3, 1e-3);
+}
+
+template <typename TDistrib, typename TGen>
+auto delta_call_bs(Call x, BSmodel y, TDistrib G ){
+    double S = exp((y.Rate(0.0,0.0)-0.5*pow(y.Sigma(0.0,0.0),2))*x.Horizon()+G);
+    return exp(-y.Rate(0.0,0.0))*x.Horizon())*call::payoff(exp((y.Rate(0.0,0.0)+));
+};
