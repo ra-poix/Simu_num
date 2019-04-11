@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=
+CFLAGS=-Wall
 EXEC=exec
 SRC= $(wildcard *.cpp)
 OBJ= $(SRC:.cpp=.o)
