@@ -76,15 +76,25 @@ sensib_malliavin malliavin(TDistrib & X, TGen & gen, unsigned batch_size, double
 }
 
 template <typename TDistrib, typename TGen>
-sensib_malliavin malliavin(composed<Call ,BSmodel>, TGen & gen, unsigned batch_size, double epsilon){
+sensib_malliavin malliavin(Call x, BSmodel y, TGen & gen, unsigned batch_size, double epsilon){
     std::normal_distribution<> G;
     TDistrib Y = delta_call_bs(Call x, BSmodel y, TDistrib G);
     double delta = monte_carlo(Y, gen, 1e3, 1e-3);
 }
 
 
-template <typename TDistrib>
-double delta_call_bs(Call x, BSmodel y, TDistrib G ){
+
+double delta_call_bs(Call x, BSmodel y, double G ){
     double S = exp((y.Rate(0.0,0.0)-0.5*pow(y.Sigma(0.0,0.0),2))*x.Horizon()+G*x.Horizon()*y.Sigma(0.0,0.0));
     return exp(-y.Rate(0.0,0.0)*x.Horizon())*Call::payoff(S)*G*x.Horizon()/(y.S()*y.Sigma(0.0,0.0)*x.Horizon());
+};
+
+double gamma_call_bs(Call x, BSmodel y, double G ){
+    double S = exp((y.Rate(0.0,0.0)-0.5*pow(y.Sigma(0.0,0.0),2))*x.Horizon()+G*x.Horizon()*y.Sigma(0.0,0.0));
+    return exp(-y.Rate(0.0,0.0)*x.Horizon())*Call::payoff(S)*(pow(G*x.Horizon(),2)/(y.Sigma(0.0,0.0)*x.Horizon())-G*x.Horizon()-1/y.Sigma(0.0,0.0))/(pow(y.S(),2)*y.Sigma(0.0,0.0)*x.Horizon());
+};
+
+double vega_call_bs(Call x, BSmodel y, double G ){
+    double S = exp((y.Rate(0.0,0.0)-0.5*pow(y.Sigma(0.0,0.0),2))*x.Horizon()+G*x.Horizon()*y.Sigma(0.0,0.0));
+    return exp(-y.Rate(0.0,0.0)*x.Horizon())*Call::payoff(S)*(pow(G*x.Horizon(),2)/(y.Sigma(0.0,0.0)*x.Horizon())-G*x.Horizon()-1/y.Sigma(0.0,0.0));
 };
