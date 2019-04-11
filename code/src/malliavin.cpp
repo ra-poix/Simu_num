@@ -1,9 +1,9 @@
 #include <iostream>
 #include <cmath>
-#include "compose.hpp"
 #include "Call.hpp"
 #include "BSmodel.hpp"
 #include <random>
+#include "compose.hpp"
 
 
 struct mean_var {
@@ -51,9 +51,9 @@ mean_var monte_carlo(TDistrib & X, TGen & gen, unsigned sample_size) {
 
 template <typename TDistrib, typename TGen>
 mean_var monte_carlo(TDistrib & X, TGen & gen, unsigned batch_size, double epsilon) {
-    auto r = monte_carlo(X, gen, batch_size);
+    double r = monte_carlo(X, gen, batch_size);
     while (r.ic_size() > epsilon) {
-        auto tmp = monte_carlo(X, gen, batch_size);
+        double tmp = monte_carlo(X, gen, batch_size);
         r += tmp;
     }
     return r;
@@ -62,7 +62,7 @@ mean_var monte_carlo(TDistrib & X, TGen & gen, unsigned batch_size, double epsil
 
 struct sensib_malliavin{
 public:
-    sensib_malliavin(double delta, double gamma, double vega): delta(0), gamma(0), vega(0){}
+    sensib_malliavin(double delta=0, double gamma=0, double vega=0): delta(delta), gamma(gamma), vega(vega){}
     ~sensib_malliavin(){};
 protected:
     double delta;
@@ -78,12 +78,13 @@ sensib_malliavin malliavin(TDistrib & X, TGen & gen, unsigned batch_size, double
 template <typename TDistrib, typename TGen>
 sensib_malliavin malliavin(composed<Call ,BSmodel>, TGen & gen, unsigned batch_size, double epsilon){
     std::normal_distribution<> G;
-    auto Y = compose(call, G);
-    auto price = monte_carlo(Y, gen, 1e3, 1e-3);
+    TDistrib Y = delta_call_bs(Call x, BSmodel y, TDistrib G);
+    double delta = monte_carlo(Y, gen, 1e3, 1e-3);
 }
 
-template <typename TDistrib, typename TGen>
-auto delta_call_bs(Call x, BSmodel y, TDistrib G ){
-    double S = exp((y.Rate(0.0,0.0)-0.5*pow(y.Sigma(0.0,0.0),2))*x.Horizon()+G);
-    return exp(-y.Rate(0.0,0.0))*x.Horizon())*call::payoff(exp((y.Rate(0.0,0.0)+));
+
+template <typename TDistrib>
+double delta_call_bs(Call x, BSmodel y, TDistrib G ){
+    double S = exp((y.Rate(0.0,0.0)-0.5*pow(y.Sigma(0.0,0.0),2))*x.Horizon()+G*x.Horizon()*y.Sigma(0.0,0.0));
+    return exp(-y.Rate(0.0,0.0)*x.Horizon())*Call::payoff(S)*G*x.Horizon()/(y.S()*y.Sigma(0.0,0.0)*x.Horizon());
 };
