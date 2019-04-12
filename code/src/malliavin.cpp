@@ -7,8 +7,11 @@
 
 
 struct mean_var {
-    mean_var(unsigned n = 0, double sum_x = 0, double sum_xx = 0)
-    : sample_size(n), sum_x(sum_x), sum_xx(sum_xx) { }
+    mean_var(unsigned n = 0, double sum_x = 0, double sum_xx = 0){
+        sample_size=n;
+        sum_x=sum_x;
+        sum_xx=sum_xx;
+    }
     double mean() const { return sum_x / (double) sample_size; }
     double var() const { return (sum_xx - sample_size * mean() * mean())
         / (double) (sample_size-1); }
@@ -21,11 +24,11 @@ struct mean_var {
         return *this;
     }
     friend mean_var operator+(mean_var const & mv1, mean_var const & mv2) {
-        return { mv1.sample_size + mv2.sample_size,
-            mv1.sum_x + mv2.sum_x,
-            mv1.sum_xx + mv2.sum_xx };
+        mean_var y(mv1.sample_size + mv2.sample_size,mv1.sum_x + mv2.sum_x,mv1.sum_xx + mv2.sum_xx);
+        return y;
     }
     friend mean_var operator*(double alpha, mean_var const & mv) {
+        mean_var y(//acompleter)
         return { mv.sample_size, alpha * mv.sum_x, alpha * mv.sum_xx };
     }
     friend std::ostream & operator<<(std::ostream & o, mean_var const & mv) {
@@ -70,10 +73,7 @@ protected:
     double vega;
 };
 
-template <typename TDistrib, typename TGen>
-sensib_malliavin malliavin(TDistrib & X, TGen & gen, unsigned batch_size, double epsilon){
-    
-}
+
 
 template <typename TDistrib, typename TGen>
 sensib_malliavin malliavin(Call x, BSmodel y, TGen & gen, unsigned batch_size, double epsilon){
