@@ -11,15 +11,40 @@
 #include <cmath>
 #include <new>
 
-//calculer payoff call a S
-//Calculer payoff call a S+d
-//return f(S+d) - f(S) / d
+double mv_delta_bs(Option x, Model y, double G , double e){
+    double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
 
-double mv_delta_bs(Option x, Model y, double G , double e){;
-    double S =  y.S()*exp( (y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2)) *x.Horizon()+G*x.Horizon()*y.sigma(0.0,0.0));
-   // std::cout << S << " " ;
-    return exp(-y.rate(0.0,0.0)*x.Horizon()) * x.payoff(S) * G * x.Horizon() / (y.S() * y.sigma(0.0,0.0) * x.Horizon());
+   // std::cout << " g= "<< G << " horizon = " << S   << std::endl;
+    return exp(-y.rate(0.0,0.0)*x.Horizon())*x.payoff(S)*G*sqrt(x.Horizon())/(y.S()*y.sigma(0.0,0.0)*x.Horizon());
 };
+
+double mv_gamma_bs(Option x, Model y, double G , double e){
+    double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
+    return exp(-y.rate(0.0,0.0)*x.Horizon())*x.payoff(S)*(pow(G*sqrt(x.Horizon()),2)/(y.sigma(0.0,0.0)*x.Horizon())-G*sqrt(x.Horizon())-1/y.sigma(0.0,0.0))/(pow(y.S(),2)*y.sigma(0.0,0.0)*x.Horizon());
+};
+
+double mv_vega_bs(Option x, Model y, double G, double e ){
+    double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
+    return exp(-y.rate(0.0,0.0)*x.Horizon())*x.payoff(S)*(pow(G*sqrt(x.Horizon()),2)/(y.sigma(0.0,0.0)*x.Horizon())-G*sqrt(x.Horizon())-1/y.sigma(0.0,0.0));
+};
+
+
+double Tangent_delta_bs(Option x, Model y, double G, double e ){
+    double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
+    if(S>=x.Strike()) {return S/y.S();} else {return 0;}
+};
+
+double Tangent_vega_bs(Option x, Model y, double G, double e ){
+    double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
+    if(S>=x.Strike()) {return (G*sqrt(x.Horizon())-y.sigma(0.0,0.0)*x.Horizon())*S/y.S();} else {return 0;}
+};
+
+/*double Tangent_delta_cev(Option x, Model y, double G, double e ){
+    euler scheme(x,y,gen,e);
+    double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
+    if(S>=x.Strike()) {return S/y.S();} else {return 0;}
+};*/ //A TRAVAILLER !!!!!
+
 
 static double FD_delta_bs(Option o, Model m, double x, double e){
     double S0 = m.S();
@@ -78,8 +103,8 @@ void MonteCarlo(Option o, BSmodel m, RandomGenerator g, functions *func, MeanVar
     int compteur = 0;
     while(compteur < 100000){
         compteur ++;
-        /*if(compteur % 1000 == 0 && enough_precise(*mv,size_func))
-            break;*/
+        if(compteur % 1000 == 0 && enough_precise(*mv,size_func))
+            break;
         double X = g.normale();
        // printf("MonteCarlo g = %f \n",g);
         for(int i = 0; i < size_func; i++){
@@ -99,7 +124,7 @@ int main(){
     functions f[]  = {FD_delta_bs};
     int size_f = 1;
 
-    double S = 100;
+    double S;
     double r = 0.02;
     double vol = 0.4;
     BSmodel b(r, vol, S);
@@ -108,18 +133,26 @@ int main(){
     double T = 10;
     Call c(K,T);
 
-    double precision = 1;
+    double precision = 0.001;
     MeanVar *mv = new MeanVar[size_f];
     for(int i = 0; i < size_f; i++)
         mv[i] = MeanVar(precision);
-
     RandomGenerator g(time(NULL));
+    for(S = 50 ; S < 150 ; S++){
+        BSmodel b(r,vol,S);
+        MonteCarlo(c, b, g, f, &mv, size_f);
+        std::cout << "mean = "<< mv[0].mean() << ", var = " << mv[0].var() << std::endl;
+    }
 
-    MonteCarlo(c, b, g, f, &mv, size_f);
+    //RandomGenerator g(time(NULL));
+
+    
+
     std::cout << "\nFIN MC\n";
-
     std::cout << "mean = "<< mv[0].mean() << ", var = " << mv[0].var() << std::endl;
   //  std::cout << "mean = "<< mv[1].mean() << ", var = " << mv[1].var();
+
+
     return 0;
 }
 

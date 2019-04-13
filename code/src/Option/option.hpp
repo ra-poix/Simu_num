@@ -7,7 +7,7 @@ class Option{
 
     public:
 
-        Option(std::function<double (double) > _payoff);
+        Option(double _horizon, double _strike, std::function<double (double) > _payoff);
         ~Option(){};
         std::function<double (double) > payoff;
 
@@ -16,9 +16,10 @@ class Option{
         //virtual double payoff(double x){ return x; };
 
         virtual double Horizon () const { return horizon;};
-        
+        virtual double Strike() const { return strike;}
     private:
         double horizon;
+        double strike;
 };
 
 #endif
