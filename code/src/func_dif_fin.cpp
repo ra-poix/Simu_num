@@ -15,9 +15,9 @@
 //Calculer payoff call a S+d
 //return f(S+d) - f(S) / d
 
-double mv_delta_bs(Option x, Model y, double G , double e){
- //   std::cout << y.rate(0.0,0.0) << "zeez";
-    double S =  y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*x.Horizon()*y.sigma(0.0,0.0));
+double mv_delta_bs(Option x, Model y, double G , double e){;
+    double S =  y.S()*exp( (y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2)) *x.Horizon()+G*x.Horizon()*y.sigma(0.0,0.0));
+   // std::cout << S << " " ;
     return exp(-y.rate(0.0,0.0)*x.Horizon()) * x.payoff(S) * G * x.Horizon() / (y.S() * y.sigma(0.0,0.0) * x.Horizon());
 };
 
@@ -27,8 +27,8 @@ static double FD_delta_bs(Option o, Model m, double x, double e){
     double r = m.rate(0.0,0.0);
 
 
-    double S1 = o.payoff( (S0+e) *  exp( (r - (1/2)*sigma*sigma) * o.Horizon() + sigma*x ) );
-    double S2 = o.payoff( (S0-e) *  exp( (r - (1/2)*sigma*sigma) * o.Horizon() + sigma*x ) );
+    double S1 = o.payoff( (S0+e) *  exp( (r - 0.5*sigma*sigma) * o.Horizon() + sigma*x ) );
+    double S2 = o.payoff( (S0-e) *  exp( (r - 0.5*sigma*sigma) * o.Horizon() + sigma*x ) );
     return (S1 - S2)/(2*e);
 }
 
@@ -37,9 +37,9 @@ static double FD_vega_bs(Option o, Model m, double x, double e){
     double sigma = m.sigma(0.0,0.0) + e;
     double r = m.rate(0.0,0.0);
 
-    double S1 = o.payoff( (S0) *  exp( (r - (1/2)*sigma*sigma) * o.Horizon() + (sigma)*x ) );
+    double S1 = o.payoff( (S0) *  exp( (r - 0.5*sigma*sigma) * o.Horizon() + (sigma)*x ) );
     sigma = m.sigma(0.0,0.0) - e;
-    double S2 = o.payoff(  (S0) *  exp( (r - (1/2)*sigma*sigma) * o.Horizon() + sigma*x ) );
+    double S2 = o.payoff(  (S0) *  exp( (r - 0.5*sigma*sigma) * o.Horizon() + sigma*x ) );
     return (S1 - S2)/(2*e);
 }
 
@@ -47,14 +47,14 @@ static double FD_gamma_bs(Option o, Model m, double x, double e){
     double S0 = m.S();
     double sigma = m.sigma(0.0,0.0);
     double r = m.rate(0.0,0.0);
-    printf("\nFD_gamma_bs s = %f vol = %f r = %f \n",S0,sigma, r);fflush(stdout);
+    //printf("\nFD_gamma_bs x = %f S0 = %f vol = %f r = %f \n",x,S0,sigma, r);fflush(stdout);
 
 
-    double S1 = o.payoff( (S0+e) *  exp( (r - (1/2)*sigma*sigma) * o.Horizon() + sigma*x ) );
-    double S2 = o.payoff(  (S0-e) *  exp( (r - (1/2)*sigma*sigma) * o.Horizon() + sigma*x ) );
-    double S3 = o.payoff( (S0) *  exp( (r - (1/2)*sigma*sigma) * o.Horizon() + sigma*x ) );
-    std::cout << "\nFD_gamma_bs S1 / S2 / S3 :"<< S1 <<"/"<<S2 << "/" << S3 << std::endl;
-    std::cout << "\nresult = " << (S1 + S2 - 2*S3) / (e*e) << std::endl;
+    double S1 = o.payoff( (S0+e) *  exp( (r - 0.5*sigma*sigma) * o.Horizon() + sigma*x ) );
+    double S2 = o.payoff(  (S0-e) *  exp( (r - 0.5*sigma*sigma) * o.Horizon() + sigma*x ) );
+    double S3 = o.payoff( (S0) *  exp( (r - 0.5*sigma*sigma) * o.Horizon() + sigma*x ) );
+   // std::cout << "\nFD_gamma_bs S1 / S2 / S3 :"<< S1 <<"/"<<S2 << "/" << S3 << std::endl;
+   // std::cout << "\nresult = " << (S1 + S2 - 2*S3) / (e*e) << std::endl;
 
     return (S1 + S2 - 2*S3) / (e*e);
 }
@@ -74,43 +74,52 @@ bool enough_precise(MeanVar *mv, size_t size_mv) {
     return true;
 }
 
-void MonteCarlo(Option o, BSmodel m, Generateur g, functions *func, MeanVar **mv, size_t size_func){
+void MonteCarlo(Option o, BSmodel m, RandomGenerator g, functions *func, MeanVar **mv, int size_func){
     int compteur = 0;
-    while(/*!enough_precise(*mv,size_func)*/compteur < 100000){
-        double X = g.normale();
-        for(int i = 0; i < size_func; i++){
-            mv[i] -> maj( func[i](o,m,X,1) );        
-        }
+    while(compteur < 100000){
         compteur ++;
+        /*if(compteur % 1000 == 0 && enough_precise(*mv,size_func))
+            break;*/
+        double X = g.normale();
+       // printf("MonteCarlo g = %f \n",g);
+        for(int i = 0; i < size_func; i++){
+           // std::cout << i << std::endl;fflush(stdout);
+            mv[i] -> maj( func[i](o,m,X,1) );
+            mv[i] -> maj( func[i](o,m,-X,1) );
+        }
+        
     }
+
+    std::cout << "compteur = " << compteur << std::endl;
 };
 
 
 int main(){
 
-    functions f[]  = {mv_delta_bs};
-    size_t size_f = 1;
+    functions f[]  = {FD_delta_bs};
+    int size_f = 1;
 
     double S = 100;
     double r = 0.02;
-    double vol = 0.3;
+    double vol = 0.4;
     BSmodel b(r, vol, S);
 
     double K = 100;
-    double T = 1;
+    double T = 10;
     Call c(K,T);
 
-    double precision = 0.005;
+    double precision = 1;
     MeanVar *mv = new MeanVar[size_f];
     for(int i = 0; i < size_f; i++)
         mv[i] = MeanVar(precision);
 
-    RandomGenerator g(5);
+    RandomGenerator g(time(NULL));
 
     MonteCarlo(c, b, g, f, &mv, size_f);
     std::cout << "\nFIN MC\n";
 
-    std::cout << "mean = "<< mv[0].mean() << ", var = " << mv[0].var();
+    std::cout << "mean = "<< mv[0].mean() << ", var = " << mv[0].var() << std::endl;
+  //  std::cout << "mean = "<< mv[1].mean() << ", var = " << mv[1].var();
     return 0;
 }
 

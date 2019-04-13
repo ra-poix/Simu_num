@@ -33,7 +33,9 @@ class MeanVar{
         }
 
         bool is_enough_precise() const { 
-            return (1.96 * sqrt( var() /n ) < precision); 
+            double aux = 1.96 * sqrt( var() /n ) ;
+            std::cout << aux  << std::endl;
+            return ( 1.96 * sqrt(var() /n) < precision); 
         }
 
         int size() const { return n;};

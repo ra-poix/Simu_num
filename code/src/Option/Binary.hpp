@@ -10,7 +10,7 @@ class Binary: public Option{
         double horizon;
         
     public:
-        Binary(double _strike, double _horizon): strike(_strike), horizon(_horizon){};
+        Binary(double _strike, double _horizon);
         ~Binary();
         double boundary_left(double t, double x, double rate);
         double boundary_right(double t, double x, double rate);

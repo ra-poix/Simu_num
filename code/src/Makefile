@@ -1,7 +1,7 @@
 CC=g++
 CFLAGS=-Wall -std=c++11
 EXEC=exec
-SRC= $(wildcard Option/*.cpp Model/*.cpp Generateur.*.cpp  *.cpp)
+SRC= $(wildcard Option/*.cpp Model/*.cpp Generateur/*.cpp  *.cpp)
 OBJ= $(SRC:Option/*.cpp=object/*.o Model/*.cpp=object/*.o Generateur/*.cpp=object/*.o .cpp=.o )
 
 all: $(EXEC)

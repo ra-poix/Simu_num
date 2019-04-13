@@ -11,11 +11,12 @@ class Call: public Option{
         double horizon;
         
     public:
-        Call(double _strike, double _horizon): strike(_strike), horizon(_horizon){};
+        Call(double _strike, double _horizon);
+
         ~Call(){};
         double boundary_left(double t, double x, double rate);
         double boundary_right(double t, double x, double rate);
-        double payoff(double x);
+      //  double payoff(double x);
 
         double Strike(){ return strike; };
         double Horizon(){ return horizon; };
