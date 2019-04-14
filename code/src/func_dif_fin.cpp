@@ -51,6 +51,8 @@ double Tangent_delta_cev(Option x, Model y, double G, double e ){
 };
 
 
+
+
 static double FD_delta_bs(Option o, Model m, double x, double e){
     double S0 = m.S();
     double sigma = m.sigma(0.0,0.0);
@@ -133,12 +135,12 @@ void MonteCarlo(Option &o, CEVModel &m, RandomGenerator &g, functions func, Mean
         // printf("MonteCarlo g = %f \n",g);
         // std::cout << i << std::endl;fflush(stdout);
         mv -> maj( func(o,m,X,1) );
-        //mv -> maj( func(o,m,-X,1) );
+        //mv -> maj( func(o,m,-X,1) ); //la raison etant que vu que cest un schema d'euler et pas juste une normale(0,1) cest plus -X la var antithetique
         
     }
     
     std::cout << "compteur = " << compteur << std::endl;
-};
+}; //en gros jai cree une autre fonction monte carlo qui prend CEVmodel comme argument et au lieu de creer une normale X ca cree un schema d'euler et une double X=schema.solution() if you see what i mean my boy
 
 int main(){
 
