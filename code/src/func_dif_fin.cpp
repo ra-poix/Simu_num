@@ -63,6 +63,19 @@ static double FD_delta_bs(Option o, Model m, double x, double e){
     return (S1 - S2)/(2*e);
 }
 
+static double FD_delta_cev(Option o, Model m, double x, double e){
+    double S0 = m.S();
+    double sigma = m.sigma(0.0,0.0);
+    double r = m.rate(0.0,0.0);
+    
+    
+    double S1 = o.payoff( (S0+e) *  x /m.S() );
+    double S2 = o.payoff( (S0-e) *  x /m.S() );
+    return (S1 - S2)/(2*e);
+} //FYI tu penses pas qu'il faut actualiser????????
+
+
+
 static double FD_vega_bs(Option o, Model m, double x, double e){
     double S0 = m.S();
     double sigma = m.sigma(0.0,0.0) + e;
