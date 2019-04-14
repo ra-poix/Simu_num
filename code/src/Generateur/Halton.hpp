@@ -9,12 +9,14 @@ class Halton: public LowDiscrepancySequence{
         Halton(long _dim, long index = 1);
         ~Halton(){};
 
-        std::vector<double> next();
+      //  std::vector<double> next();
 
     private:
         std::vector<long> p;
         long index;
 
+        void incr();
+        long get_index() { return index; };
         void set_params();
         void find_primes(long _dim);
         std::vector<long> decompose(long n, long p);

@@ -8,12 +8,12 @@
 class RandomGenerator : public Generateur{
 
     public:
-        RandomGenerator(double seed = std::time(nullptr)): gen(seed), distribution(){} ;
+        RandomGenerator(double seed = std::time(nullptr)):
+            Generateur(  [this] () { return distribution(gen);} ),
+            gen(seed),
+            distribution(){} ;
 
-        double normale(){
-            return distribution(gen);
-        };
-
+        
     private:
         std::mt19937_64 gen;
         std::normal_distribution<double> distribution;

@@ -9,11 +9,13 @@
 class LowDiscrepancyGenerator: public Generateur{
 
     public:
-        LowDiscrepancyGenerator(LowDiscrepancySequence _seq = Halton(2)): Generateur(), seq(_seq) {};
-        double normale(){
-            std::vector<double> a = seq.next();
-            return sqrt(-2 * log (a[0]) ) * cos(2*std::atan(1)*4*a[1]);
-        };
+        LowDiscrepancyGenerator(LowDiscrepancySequence _seq):
+            Generateur( [this] () { 
+                std::vector<double> a = seq.next();
+                //std::cout << "Lambda func LDS " << a[0] << " " << a[1] << std::endl;
+                return sqrt(-2 * log (a[0]) ) * cos(2*std::atan(1)*4*a[1]);
+            }),
+            seq(_seq) {};
 
     private:
         LowDiscrepancySequence seq;

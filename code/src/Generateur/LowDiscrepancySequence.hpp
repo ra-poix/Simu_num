@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <functional>
 
 class LowDiscrepancySequence{
 
@@ -10,10 +11,13 @@ class LowDiscrepancySequence{
         long dim;
 
     public:
-        LowDiscrepancySequence(long _dim): dim(_dim){};
-        virtual std::vector<double> next(){
+        LowDiscrepancySequence(std::function<std::vector<double> ()> _next ,long _dim): next(_next) ,dim(_dim){};
+
+        std::function<std::vector<double> ()> next;
+
+        /*virtual std::vector<double> next(){
             return std::vector<double>();
-        };
+        };*/
 
 };
 
