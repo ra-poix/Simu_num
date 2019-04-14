@@ -65,10 +65,7 @@ static double FD_delta_bs(Option o, Model m, double x, double e){
 
 static double FD_delta_cev(Option o, Model m, double x, double e){
     double S0 = m.S();
-    double sigma = m.sigma(0.0,0.0);
-    double r = m.rate(0.0,0.0);
-    
-    
+
     double S1 = o.payoff( (S0+e) *  x /m.S() );
     double S2 = o.payoff( (S0-e) *  x /m.S() );
     return (S1 - S2)/(2*e);
@@ -100,6 +97,22 @@ static double FD_gamma_bs(Option o, Model m, double x, double e){
    // std::cout << "\nFD_gamma_bs S1 / S2 / S3 :"<< S1 <<"/"<<S2 << "/" << S3 << std::endl;
    // std::cout << "\nresult = " << (S1 + S2 - 2*S3) / (e*e) << std::endl;
 
+    return (S1 + S2 - 2*S3) / (e*e);
+}
+
+static double FD_gamma_cev(Option o, Model m, double x, double e){
+    double S0 = m.S();
+    double sigma = m.sigma(0.0,0.0);
+    double r = m.rate(0.0,0.0);
+    //printf("\nFD_gamma_bs x = %f S0 = %f vol = %f r = %f \n",x,S0,sigma, r);fflush(stdout);
+    
+    
+    double S1 = o.payoff( (S0+e) *  x /m.S() );
+    double S2 = o.payoff(  (S0-e) * x /m.S() );
+    double S3 = o.payoff(x);
+    // std::cout << "\nFD_gamma_bs S1 / S2 / S3 :"<< S1 <<"/"<<S2 << "/" << S3 << std::endl;
+    // std::cout << "\nresult = " << (S1 + S2 - 2*S3) / (e*e) << std::endl;
+    
     return (S1 + S2 - 2*S3) / (e*e);
 }
 
