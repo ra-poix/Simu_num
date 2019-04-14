@@ -45,7 +45,6 @@ double Tangent_vega_bs(Option x, Model y, double G, double e ){
 
 
 double Tangent_delta_cev(Option x, Model y, double G, double e ){
-    euler scheme(x,y,gen,e);
     double S =G;
     if(S>=x.Strike()) {return exp(-y.rate(0.0,0.0)*x.Horizon())S/y.S();} else {return 0;}
 };
