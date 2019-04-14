@@ -1,6 +1,10 @@
 #include "Model/BSmodel.hpp"
+#include "Model/euler.hpp"
+#include "Model/CEVModel.hpp"
+
 #include "Option/Call.hpp"
 #include "Option/Binary.hpp"
+
 #include "MeanVar.hpp"
 
 #include "Generateur/Generateur.hpp"
@@ -15,7 +19,6 @@
 
 double mv_delta_bs(Option x, Model y, double G , double e){
     double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
-
    // std::cout << " g= "<< G << " horizon = " << S   << std::endl;
     return exp(-y.rate(0.0,0.0)*x.Horizon())*x.payoff(S)*G*sqrt(x.Horizon())/(y.S()*y.sigma(0.0,0.0)*x.Horizon());
 };
@@ -34,23 +37,31 @@ double mv_vega_bs(Option x, Model y, double G, double e ){
 double Tangent_delta_bs(Option x, Model y, double G, double e ){
     double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
    // std::cout << S << std::endl;
-    if(S>=x.Strike()) {return exp(-y.rate(0.0,0.0)*x.Horizon())S/y.S();} else {return 0;}
+    if(S>=x.Strike()) {
+        return exp(-y.rate(0.0,0.0)*x.Horizon())*S/y.S();
+    } else {
+        return 0;
+    }
 };
 
 double Tangent_vega_bs(Option x, Model y, double G, double e ){
     double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
-    if(S>=x.Strike()) {return exp(-y.rate(0.0,0.0)*x.Horizon())(G*sqrt(x.Horizon())-y.sigma(0.0,0.0)*x.Horizon())*S;} else {return 0;}
+    if(S>=x.Strike()) {
+        return exp(-y.rate(0.0,0.0)*x.Horizon()) *(G*sqrt(x.Horizon())-y.sigma(0.0,0.0)*x.Horizon())*S;} 
+    else 
+       return 0;
 };
 
 
 
 double Tangent_delta_cev(Option x, Model y, double G, double e ){
     double S =G;
-    if(S>=x.Strike()) {return exp(-y.rate(0.0,0.0)*x.Horizon())S/y.S();} else {return 0;}
+    if(S>=x.Strike()) {
+        return exp(-y.rate(0.0,0.0)*x.Horizon())*S/y.S();
+    } else {
+        return 0;
+    }
 };
-
-
-
 
 static double FD_delta_bs(Option o, Model m, double x, double e){
     double S0 = m.S();
@@ -80,7 +91,6 @@ static double FD_vega_bs(Option o, Model m, double x, double e){
     double r = m.rate(0.0,0.0);
 
     double S1 = o.payoff( (S0) *  exp( (r - 0.5*sigma1*sigma1) * o.Horizon() + (sigma1)*x*sqrt(o.Horizon()) ) );
-    sigma = m.sigma(0.0,0.0) - e;
     double S2 = o.payoff(  (S0) *  exp( (r - 0.5*sigma2*sigma2) * o.Horizon() + sigma2*x*sqrt(o.Horizon()) ) );
     return (S1 - S2)/(2*e);
 }
@@ -140,7 +150,6 @@ void MonteCarlo(Option &o, BSmodel &m, RandomGenerator &g, functions func, MeanV
         if(compteur % 100000 == 0 && mv -> is_enough_precise())
             break;
         double X = g.normale();
-        // printf("MonteCarlo g = %f \n",g);
         // std::cout << i << std::endl;fflush(stdout);
         mv -> maj( func(o,m,X,1) );
         mv -> maj( func(o,m,-X,1) );
@@ -152,31 +161,32 @@ void MonteCarlo(Option &o, BSmodel &m, RandomGenerator &g, functions func, MeanV
 
 void MonteCarlo(Option &o, CEVModel &m, RandomGenerator &g, functions func, MeanVar *mv){
     int compteur = 0;
-    while(compteur < 1000000){
+    while(compteur < 1){
         compteur ++;
         if(compteur % 100000 == 0 && mv -> is_enough_precise())
             break;
         euler scheme(o,m,g);
         double X=scheme.solution(1000);
         // printf("MonteCarlo g = %f \n",g);
-        // std::cout << i << std::endl;fflush(stdout);
-        mv -> maj( func(o,m,X,1) );
-        //mv -> maj( func(o,m,-X,1) ); //la raison etant que vu que cest un schema d'euler et pas juste une normale(0,1) cest plus -X la var antithetique
-        
+        // std::cout << X << std::endl;fflush(stdout);
+        mv -> maj( func(o,m,X,1) );        
     }
     
     std::cout << "compteur = " << compteur << std::endl;
-}; //en gros jai cree une autre fonction monte carlo qui prend CEVmodel comme argument et au lieu de creer une normale X ca cree un schema d'euler et une double X=schema.solution() if you see what i mean my boy
+};
 
 int main(){
 
-    functions f  = Tangent_vega_bs;
+    functions f  = Tangent_delta_cev;
     int size_f = 1;
 
     double S;
     double r = 0.02;
     double vol = 0.4;
-    BSmodel b(r, vol, S);
+
+    double nu = 0.5;
+    //BSmodel b(r, vol, S);
+    CEVModel b(r,S,nu);
 
     double K = 100;
     double T = 1;
@@ -189,8 +199,9 @@ int main(){
     RandomGenerator g(time(NULL));
     std::ofstream fdm_out("fdm.csv");
     fdm_out << "S" << ";" << "Y" << std::endl;
-    for(S = 10 ; S < 200 ; S++){
-        BSmodel b(r,vol,S);
+    for(S = 100 ; S < 101 ; S++){
+        //BSmodel b(r,vol,S);
+        CEVModel b(r,S,nu);
         MonteCarlo(c, b, g, f, mv);
         std::cout<< "S = " << S << " mean = "<< mv->mean() << ", var = " << mv -> var() << std::endl;
         fdm_out << S << ";" << mv->mean() << std::endl;

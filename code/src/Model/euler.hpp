@@ -9,18 +9,22 @@
 #define euler_hpp
 
 #include "model.hpp"
-#include "Generateur.hpp"
-#include "option.hpp"
+#include "../Generateur/Generateur.hpp"
+#include "../Generateur/RandomGenerator.hpp"
+
+#include "../Option/option.hpp"
+
+#include <cmath>
 
 class euler{
 public:
-    euler(Option z,Model x,Generateur gen): z(z) x(x), gen(gen) {};
+    euler(Option z,Model x,RandomGenerator &gen): z(z), x(x), gen(gen) {};
     ~euler(){};
     double solution(int N);
     
 private:
     Model x;
-    Generateur gen;
+    RandomGenerator &gen;
     Option z;
 };
 #endif /* euler_hpp */
