@@ -75,12 +75,13 @@ static double FD_delta_cev(Option o, Model m, double x, double e){
 
 static double FD_vega_bs(Option o, Model m, double x, double e){
     double S0 = m.S();
-    double sigma = m.sigma(0.0,0.0) + e;
+    double sigma1 = m.sigma(0.0,0.0) + e;
+    double sigma2=m.sigma(0.0,0.0) -e;
     double r = m.rate(0.0,0.0);
 
-    double S1 = o.payoff( (S0) *  exp( (r - 0.5*sigma*sigma) * o.Horizon() + (sigma)*x*sqrt(o.Horizon()) ) );
+    double S1 = o.payoff( (S0) *  exp( (r - 0.5*sigma1*sigma1) * o.Horizon() + (sigma1)*x*sqrt(o.Horizon()) ) );
     sigma = m.sigma(0.0,0.0) - e;
-    double S2 = o.payoff(  (S0) *  exp( (r - 0.5*sigma*sigma) * o.Horizon() + sigma*x*sqrt(o.Horizon()) ) );
+    double S2 = o.payoff(  (S0) *  exp( (r - 0.5*sigma2*sigma2) * o.Horizon() + sigma2*x*sqrt(o.Horizon()) ) );
     return (S1 - S2)/(2*e);
 }
 
