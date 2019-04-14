@@ -4,7 +4,7 @@
 //
 //  Created by Côme RIMBERT on 13/04/2019.
 //
-/*
+
 #include "euler.hpp"
 #include <cmath>
 
@@ -19,4 +19,4 @@ double euler::solution(int N){
     }
     return Y;
 }
-*/
+

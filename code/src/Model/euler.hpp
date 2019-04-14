@@ -14,7 +14,7 @@
 
 class euler{
 public:
-    //euler(Option z,Model x,Generateur gen): z(z) x(x), gen(gen) {};
+    euler(Option z,Model x,Generateur gen): z(z) x(x), gen(gen) {};
     ~euler(){};
     double solution(int N);
     
