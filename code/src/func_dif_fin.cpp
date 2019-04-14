@@ -34,12 +34,12 @@ double mv_vega_bs(Option x, Model y, double G, double e ){
 double Tangent_delta_bs(Option x, Model y, double G, double e ){
     double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
    // std::cout << S << std::endl;
-    if(S>=x.Strike()) {return S/y.S();} else {return 0;}
+    if(S>=x.Strike()) {return exp(-y.rate(0.0,0.0)*x.Horizon())S/y.S();} else {return 0;}
 };
 
 double Tangent_vega_bs(Option x, Model y, double G, double e ){
     double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
-    if(S>=x.Strike()) {return (G*sqrt(x.Horizon())-y.sigma(0.0,0.0)*x.Horizon())*S/y.S();} else {return 0;}
+    if(S>=x.Strike()) {return exp(-y.rate(0.0,0.0)*x.Horizon())(G*sqrt(x.Horizon())-y.sigma(0.0,0.0)*x.Horizon())*S;} else {return 0;}
 };
 
 /*double Tangent_delta_cev(Option x, Model y, double G, double e ){
