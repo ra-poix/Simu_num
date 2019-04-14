@@ -42,11 +42,13 @@ double Tangent_vega_bs(Option x, Model y, double G, double e ){
     if(S>=x.Strike()) {return exp(-y.rate(0.0,0.0)*x.Horizon())(G*sqrt(x.Horizon())-y.sigma(0.0,0.0)*x.Horizon())*S;} else {return 0;}
 };
 
-/*double Tangent_delta_cev(Option x, Model y, double G, double e ){
+
+
+double Tangent_delta_cev(Option x, Model y, double G, double e ){
     euler scheme(x,y,gen,e);
-    double S = y.S()*exp((y.rate(0.0,0.0)-0.5*pow(y.sigma(0.0,0.0),2))*x.Horizon()+G*sqrt(x.Horizon())*y.sigma(0.0,0.0));
-    if(S>=x.Strike()) {return S/y.S();} else {return 0;}
-};*/ //A TRAVAILLER !!!!!
+    double S =G;
+    if(S>=x.Strike()) {return exp(-y.rate(0.0,0.0)*x.Horizon())S/y.S();} else {return 0;}
+};
 
 
 static double FD_delta_bs(Option o, Model m, double x, double e){
@@ -120,6 +122,23 @@ void MonteCarlo(Option &o, BSmodel &m, RandomGenerator &g, functions func, MeanV
     std::cout << "compteur = " << compteur << std::endl;
 };
 
+void MonteCarlo(Option &o, CEVModel &m, RandomGenerator &g, functions func, MeanVar *mv){
+    int compteur = 0;
+    while(compteur < 1000000){
+        compteur ++;
+        if(compteur % 100000 == 0 && mv -> is_enough_precise())
+            break;
+        euler scheme(o,m,g);
+        double X=scheme.solution(1000);
+        // printf("MonteCarlo g = %f \n",g);
+        // std::cout << i << std::endl;fflush(stdout);
+        mv -> maj( func(o,m,X,1) );
+        //mv -> maj( func(o,m,-X,1) );
+        
+    }
+    
+    std::cout << "compteur = " << compteur << std::endl;
+};
 
 int main(){
 
