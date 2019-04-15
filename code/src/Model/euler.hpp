@@ -27,4 +27,4 @@ private:
     Generateur &gen;
     Option z;
 };
-#endif /* euler_hpp */
+#endif 

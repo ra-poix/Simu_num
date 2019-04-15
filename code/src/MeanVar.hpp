@@ -14,14 +14,11 @@ class MeanVar{
     public:
         MeanVar(){};
         MeanVar(double _precision):precision(_precision),n(0), x(0), xx(0) {};
-        /**
-         * Mets à jour avec une nouvelle simulation x 
-         */
+ 
         void maj(double y){
             n++;
             x+=y;
             xx+=pow(y,2);
-          //  std::cout << "MAJ new x " << x << " new xx " << xx << std::endl;
         };
 
         double mean() const {
@@ -34,7 +31,6 @@ class MeanVar{
 
         bool is_enough_precise() const { 
             double aux = 1.96 * sqrt( var() /n ) ;
-           // std::cout << aux << " var "<< var() << " n " << n << std::endl;
             return ( 1.96 * sqrt(var() /n) < precision); 
         }
 

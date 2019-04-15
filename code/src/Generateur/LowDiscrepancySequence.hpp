@@ -15,10 +15,6 @@ class LowDiscrepancySequence{
 
         std::function<std::vector<double> ()> next;
 
-        /*virtual std::vector<double> next(){
-            return std::vector<double>();
-        };*/
-
 };
 
 #endif

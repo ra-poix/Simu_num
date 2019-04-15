@@ -13,6 +13,8 @@
 #include "Generateur/LowDiscrepancyGenerator.hpp"
 #include "Generateur/LowDiscrepancySequence.hpp"
 
+#include "PDE/fdm.hpp"
+
 #include <cstdio>
 #include <ctime>
 #include <iostream>
@@ -20,24 +22,12 @@
 #include <new>
 #include <string.h>
 
-//pointeur sur fonction
-//Utilisation : function mon_pointeur[] = {maFonction1, maFonction 2, maFonction3, ...}
-//type de retour : double
-//params d'entrée : Option, Model, double, double
 typedef double (*functions) (Option, Model, double*, double);
 
-int MAX_SIZE_MC = 10000000;
-int MAX_SIZE_MC_EULER = 100000;
-int EULER_PRECISION = 1000;
+int MAX_SIZE_MC = 10000000; //Pour arrêter le calcul si la variance explose
+int MAX_SIZE_MC_EULER = 10000; //Temps de simulation élevé, il faut brider ce param ou la précision du schéma
+int EULER_PRECISION = 100; //taille des pas d'un schéma d'euler
 
-bool enough_precise(MeanVar *mv, int size_mv) {
-    for(int i = 0 ; i < size_mv; i++){
-        if(!mv[i].is_enough_precise())
-            return false;
-    }
-    return true;
-}
-/*
 int MonteCarlo(Option &o, Model &m, 
                 Generateur &g, 
                 functions func, 
@@ -45,105 +35,52 @@ int MonteCarlo(Option &o, Model &m,
                 MeanVar *mv, bool is_euler){
     int compteur = 0;
     double *X;
-    while(compteur < MAX_SIZE_MC){
+    int max = (is_euler)?MAX_SIZE_MC_EULER : MAX_SIZE_MC;
+    while(compteur < max){
         compteur ++;
-        if(compteur % 100000 == 0 && mv -> is_enough_precise())
+        if(compteur % 1000000 == 0 && mv -> is_enough_precise())
             break;
         else if (compteur%1000000 ==0)
             std::cout << " MC running : " << compteur << " simulations" << std::endl;
-        if(is_euler)
+        if(!is_euler)
             *X = g.normale();
         else{
             euler scheme(o,m,g);
             X = scheme.solution(EULER_PRECISION,true, 0.01);
         }
-      //  std::cout << pas(compteur) << " " << std::endl;fflush(stdout);
         mv -> maj( func(o,m,X,pas(compteur)) );
-  //      mv -> maj( func(o,m,-X,pas(compteur)) );
-
-    }
-    return compteur;
-};*/
-
-//MC direct
-int MonteCarlo(Option &o, BSmodel &m, 
-                Generateur &g, 
-                functions func, 
-                std::function<double (int)> pas,
-                MeanVar *mv){
-    int compteur = 0;
-    while(compteur < MAX_SIZE_MC){
-        compteur ++;
-        if(compteur % 100000 == 0 && mv -> is_enough_precise())
-            break;
-        else if (compteur%1000000 ==0)
-            std::cout << " MC running : " << compteur << " simulations" << std::endl;
-        double X = g.normale();
-      //  std::cout << pas(compteur) << " " << std::endl;fflush(stdout);
-        mv -> maj( func(o,m,&X,pas(compteur)) );
-  //      mv -> maj( func(o,m,-X,pas(compteur)) );
-
     }
     return compteur;
 };
 
+//Run une simulation et affiche le résultat sur stdout
+void run( Model b, Option c, Generateur g, MeanVar *mv, std::function<double (int)> pas, bool is_euler, functions f ){
+    std::clock_t start;
+    double duration;
+    start = std::clock();
 
-//MonteCarlo pour schema d'euler
-int MonteCarlo(Option &o, CEVModel &m, 
-                Generateur &g, 
-                functions func,
-                std::function<double (int)> pas,
-                MeanVar *mv){
-    int compteur = 0;
-    while(compteur < MAX_SIZE_MC_EULER){
-        compteur ++;
-        if(compteur % 1000== 0 && mv -> is_enough_precise())
-            break;
-        else if (compteur%100000 ==0)
-            std::cout << " MC running : " << compteur << " simulations " << std::endl;
-        euler scheme(o,m,g);
-        double *X = scheme.solution(EULER_PRECISION,true, 0.01);
-        // printf("MonteCarlo g = %f \n",g);
-        // std::cout << *X << std::endl;fflush(stdout);
-         //std::cout << " e " << func(o,m,X,pas(compteur)) ;
-        mv -> maj( func(o,m,X,pas(compteur)) );        
-    }
-    return compteur;
-};
+    int compteur = MonteCarlo(c, b, g, f, pas, mv, is_euler);
+    duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 
-/*void run(std::ofstream os, 
-        CEVModel b, Option c, functions f,Generateur g,MeanVar *mv,
-        double precision,double S,std::function<double (int)> pas,){
-    os << "S" << ";" << "mean" << ";" << "var"<< ";" << "nb_sim" << ";" << "time" << std::endl;
-    std::cout << "\n START \n";
-    for(S = 20 ; S < 180 ; S++){
-        std::clock_t start;
-        double duration;
-        start = std::clock();
-        int compteur = MonteCarlo(c, , g, f, pas, mv);
-        duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
-        std::cout << "rate: " << b.rate(0.0,0.0) << ", vol: " << b.sigma(0.0,0.0) << ", strike: "<< c.Strike() << ", horizon: " << c.Horizon() << std::endl;
-        std::cout<< "S = " << S << ", mean = "<< mv->mean() << ", var = " << mv -> var() <<", compteur = " << compteur << ", time = " << duration <<  std::endl;
-        os << S << ";" << mv->mean() << ";" << mv->var() << ";" << compteur << ";" << duration << std::endl;
-        *mv = MeanVar(precision);
-    }
-    delete mv;
-    os.close();
-}*/
+    std::cout<< "S = " << b.S() << ", mean = "<< mv->mean() << ", var = " << mv -> var() <<", compteur = " << compteur << ", time = " << duration <<  std::endl;
+
+}
 
 int main(){
 
-    std::ofstream aux;
-    double S;
+    double S = 100.0 ;
     double r = 0.02;
-    double vol = 0.2;
-    double nu = 0.2;
-   // BSmodel b(r, vol, S); 
-    CEVModel b(r,S,nu);
+    double vol = 0.3;
+    double nu = 0.7;
+    //CHOIX DU MODELE
 
-    bool is_euler = true;
+    BSmodel b(r, vol, S); 
+    //CEVModel b(r,S,nu);
 
-    double K = 100;
+    bool is_euler = false; //mettre a true pour le model CEV
+
+    //Paramètres Option
+    double K = 100.0;
     double T = 5;
     Call c(K,T);
 
@@ -152,34 +89,41 @@ int main(){
 
     Generateur g = RandomGenerator();
 
+    //Pas de temps possible pour différence finie
    std::function<double (int)> pas_const =  [&] (int i){ return 0.001;};
    std::function<double (int)> pas_dcr = [&] (int i){ 
        return 1 / pow(i,0.25);
     };
 
-    functions f  = FD_gamma_cev;
+    //fonction à tester (delta par malliavin, ou par différence finie..)
+    //cf utils.hpp
+    functions f  = Tangent_delta_bs;
 
     double precision = 0.001;
+    int compteur;
+    
     MeanVar *mv = new MeanVar;
     *mv = MeanVar(precision);
+    //Lancer une simulation
+    run(b,c,g,mv,pas_const, is_euler,f);
 
-    char *output_name = "FD_gamma_cev_mat5.csv";
+    //Où bien tracer une courbe complète
+
+ /*   char const *output_name = "output.csv";
     std::ofstream fdm_out = std::ofstream(output_name);
+
     fdm_out << "S" << ";" << "mean" << ";" << "var"<< ";" << "nb_sim" << ";" << "time" << std::endl;
 
-    std::cout << "\n START \n";
-
-    for(S = 20 ; S < 180 ; S++){
-
+  /*  for(S = 10; S < 200 ; S+=2){
         std::clock_t start;
         double duration;
         start = std::clock();
 
-        //BSmodel b(r,vol,S);
-        CEVModel b(r,S,nu);
+        //Re-préciser le modèle ici
+        BSmodel b(r,vol,S);
+        //CEVModel b(r,S,nu);
 
-        int compteur = MonteCarlo(c, b, g, f, pas_dcr, mv);
-        //        int compteur = MonteCarlo(c, b, g, f, pas_dcr, mv, is_euler);
+        int compteur = MonteCarlo(c, b, g, f, pas_dcr, mv, is_euler);
         duration = ( std::clock() - start ) / (double) CLOCKS_PER_SEC;
 
         std::cout << "rate: " << b.rate(0.0,0.0) << ", vol: " << b.sigma(0.0,0.0) << ", strike: "<< c.Strike() << ", horizon: " << c.Horizon() << std::endl;
@@ -187,11 +131,8 @@ int main(){
         fdm_out << S << ";" << mv->mean() << ";" << mv->var() << ";" << compteur << ";" << duration << std::endl;
         *mv = MeanVar(precision);
     }
-
+    fdm_out.close();*/
     delete mv;
 
-    //fdm_out.close();
-
-    std::cout << "\nFIN MC\n";
     return 0;
 }

@@ -16,7 +16,6 @@ class Call: public Option{
         ~Call(){};
         double boundary_left(double t, double x, double rate);
         double boundary_right(double t, double x, double rate);
-      //  double payoff(double x);
 
         double Strike(){ return strike; };
         double Horizon(){ return horizon; };

@@ -10,7 +10,6 @@ Halton::Halton(long _dim, long index):
             result[i] = phi(p[i]);
         }
         incr();
-        //std::cout << result[0] << " " << result[1] << " " << get_index() << std::endl;
         return result;
     } ,_dim),
     index(index)
