@@ -24,7 +24,7 @@
 
 typedef double (*functions) (Option, Model, double*, double);
 
-int MAX_SIZE_MC = 10000000; //Pour arrêter le calcul si la variance explose
+int MAX_SIZE_MC = 100000000; //Pour éviter les calculs trop longs
 int MAX_SIZE_MC_EULER = 10000; //Temps de simulation élevé, il faut brider ce param ou la précision du schéma
 int EULER_PRECISION = 100; //taille des pas d'un schéma d'euler
 
@@ -38,7 +38,7 @@ int MonteCarlo(Option &o, Model &m,
     int max = (is_euler)?MAX_SIZE_MC_EULER : MAX_SIZE_MC;
     while(compteur < max){
         compteur ++;
-        if(compteur % 1000000 == 0 && mv -> is_enough_precise())
+        if(compteur % 10000 == 0 && mv -> is_enough_precise())
             break;
         else if (compteur%1000000 ==0)
             std::cout << " MC running : " << compteur << " simulations" << std::endl;
