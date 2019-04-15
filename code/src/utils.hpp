@@ -5,6 +5,7 @@
 
 double mv_delta_bs(Option x, Model y, double *G , double e);
 double mv_gamma_bs(Option x, Model y, double *G , double e);
+double mv_gamma_bs2(Option x, Model y, double *G , double e);
 double mv_vega_bs(Option x, Model y, double *G, double e );
 
 double Tangent_delta_bs(Option x, Model y, double *G, double e );
