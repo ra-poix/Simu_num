@@ -8,8 +8,10 @@ class BSmodel : public Model{
     public:
         BSmodel(double r,  double vol, double s);
         ~BSmodel(){};
-        double S0;
+        double S(){ return S0;};
 
+    private:
+        double S0;
 };
 
 #endif

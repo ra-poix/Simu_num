@@ -12,7 +12,7 @@ class CEVModel : public Model{
     public:
         CEVModel(double r, double s, double NU);
         ~CEVModel(){};
- 
+        double S(){ return S0;};
     private:
         double S0;
         double nu;

@@ -18,13 +18,13 @@
 
 class euler{
 public:
-    euler(Option z,Model x,RandomGenerator &gen): z(z), x(x), gen(gen) {};
+    euler(Option &z,Model &x,Generateur &gen): z(z), x(x), gen(gen) {};
     ~euler(){};
-    double solution(int N);
+    double* solution(int N, bool is_fd, double delta);
     
 private:
     Model x;
-    RandomGenerator &gen;
+    Generateur &gen;
     Option z;
 };
 #endif /* euler_hpp */
